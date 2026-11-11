@@ -1,0 +1,69 @@
+MAXI tv — appli Fire TV 4K
+==========================
+
+CE QUE C'EST
+  La même appli que sur PC (app/src/main/assets/index.html), dans une coque Android pour Fire TV :
+  - navigation à la télécommande (flèches, OK, Retour)
+  - lecteur vidéo natif ExoPlayer : 4K, HEVC, mkv, HLS, Dolby (décodage matériel de la Fire TV)
+  - les requêtes réseau passent par l'appli (plus de blocage CORS, certificats auto-signés acceptés)
+  - repli automatique pour les affiches de films qui ne s'affichent pas
+  - icône + bannière pour l'écran d'accueil de la Fire TV
+
+INSTALLER DEPUIS INTERNET (sans Android Studio) — GitHub fabrique l'APK pour toi
+  A. Crée un compte gratuit sur github.com, puis un nouveau dépôt PUBLIC (bouton « New »), par exemple « maxitv ».
+  B. Dans le dépôt : « uploading an existing file », puis glisse-dépose TOUT le contenu du dossier MAXItv-FireTV
+     (y compris le dossier « .github »), puis « Commit changes ».
+     ATTENTION : le dépôt est public. Laisse config.json VIDE (ne mets pas tes identifiants IPTV dedans) :
+     tu les taperas une seule fois sur la télé, l'appli les retient ensuite.
+  C. Onglet « Actions » : la fabrication démarre toute seule (ou « Fabriquer l'APK » > « Run workflow »).
+     Au bout de 5 à 10 minutes la pastille devient verte.
+  D. Ton APK est alors à cette adresse fixe (remplace les deux mots) :
+       https://github.com/TON_PSEUDO/TON_DEPOT/releases/download/latest/MAXItv.apk
+  E. Sur la Fire TV : installe l'appli « Downloader » (Amazon Appstore, recherche « Downloader », éditeur AFTVnews).
+     Paramètres > Ma Fire TV > Options pour les développeurs > Installer des applis inconnues > Downloader : Activé.
+     Ouvre Downloader, tape l'adresse du point D, « Go », puis « Installer ».
+     Astuce : pour taper moins, raccourcis l'adresse avec le service gratuit de AFTVnews (aftv.news), qui donne un
+     petit code à saisir dans Downloader.
+  Pour mettre l'appli à jour : modifie un fichier dans le dépôt (ex. assets/index.html), l'APK se refabrique et
+  garde la même adresse ; relance Downloader.
+
+1) FABRIQUER L'APK (AUTRE MÉTHODE : sur ton PC, avec Android Studio) (une seule fois, sur ton PC)
+  a. Installe Android Studio : https://developer.android.com/studio
+  b. Android Studio > Open > choisis le dossier "MAXItv-FireTV". Attends la fin de la synchronisation
+     (il télécharge tout seul Gradle et le SDK ; accepte les licences si on te le demande).
+  c. FACULTATIF mais recommandé : ouvre app/src/main/assets/config.json et remplis ton serveur :
+       { "host": "http://ton-serveur:8080", "user": "ton_login", "pass": "ton_mot_de_passe", "tmdb": "" }
+     L'appli se connecte alors toute seule : tu n'as rien à taper à la télécommande.
+  d. Menu Build > Build Bundle(s) / APK(s) > Build APK(s). Puis clique sur "locate" :
+     le fichier est app/build/outputs/apk/debug/app-debug.apk
+
+2) L'INSTALLER SUR LA FIRE TV
+  Sur la Fire TV : Paramètres > Ma Fire TV > Options pour les développeurs
+     - Débogage ADB : Activé
+     - Applications de sources inconnues : Activé
+  (si "Options pour les développeurs" est absent : Paramètres > Ma Fire TV > À propos, puis appuie 7 fois sur OK sur le nom de l'appareil)
+  Note l'adresse IP : Paramètres > Ma Fire TV > À propos > Réseau.
+  Sur ton PC (ADB est dans le dossier "platform-tools" d'Android Studio) :
+       adb connect ADRESSE_IP:5555
+       adb install -r app-debug.apk
+  Accepte la demande de débogage sur la télé. L'appli apparaît dans "Vos applications".
+  (Autre méthode : l'appli « Downloader » de la Fire TV, avec un lien vers l'APK.)
+
+3) TÉLÉCOMMANDE
+  Flèches : se déplacer      OK : ouvrir / lire      Retour : fermer la fiche, revenir à l'accueil
+  Retour deux fois à l'accueil : quitter
+  Dans la vidéo : OK = pause/lecture, gauche/droite = -10 s / +10 s, haut/bas = barre de lecture, Retour = quitter
+  Recherche et connexion : OK sur le champ ouvre le clavier de la Fire TV (ou la voix)
+
+4) METTRE L'APPLI À JOUR
+  Remplace app/src/main/assets/index.html par la nouvelle version (c'est le même fichier que sur PC),
+  puis refais l'étape 1d et 2.
+
+5) À SAVOIR
+  - Ce projet n'a pas pu être compilé ni essayé sur une vraie Fire TV là où il a été écrit.
+    Si Android Studio affiche une erreur au build, copie-la : elle se corrige en général en une ligne.
+  - Il faut un moteur web récent (Amazon WebView à jour : Fire OS 7 ou plus, donc Fire TV Stick 4K / 4K Max / Cube).
+  - Les bandes-annonces YouTube peuvent ne pas se lancer dans ce moteur web : l'appli prend alors celles
+    d'Apple (iTunes), qui marchent partout.
+  - Facultatif : copie hls.min.js (depuis node_modules/hls.js/dist/ sur ton PC) dans app/src/main/assets/
+    pour les aperçus de chaînes ; sans lui, la Fire TV lit déjà le HLS nativement.

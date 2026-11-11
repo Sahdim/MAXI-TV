@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:keepScreenOn="true">
+
+    <!-- l'image et les sous-titres : ExoPlayer (sans ses commandes d'origine) -->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="false"
+        app:resize_mode="fit"
+        app:use_controller="false" />
+
+    <!-- l'interface MAXI tv (player.html), transparente, par-dessus la vidéo -->
+    <WebView
+        android:id="@+id/ui"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>
