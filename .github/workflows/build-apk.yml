@@ -1,0 +1,59 @@
+name: Fabriquer l'APK
+
+on:
+  workflow_dispatch: {}          # bouton « Run workflow » dans l'onglet Actions
+  push:
+    branches: [ main, master ]   # et automatiquement à chaque modification
+
+permissions:
+  contents: write                # nécessaire pour publier l'APK dans « Releases »
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Préparer le SDK Android (déjà installé sur le serveur)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" || true
+
+      - name: Installer Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Fabriquer l'APK
+        run: |
+          # fonctionne même si le projet est dans un sous-dossier du dépôt
+          DIR=$(dirname "$(find . -name settings.gradle.kts | head -1)")
+          echo "Projet trouvé dans : $DIR"
+          cd "$DIR"
+          gradle assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/MAXItv.apk"
+
+      - name: Garder une copie téléchargeable (Actions)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAXItv-apk
+          path: MAXItv.apk
+
+      - name: Publier l'APK à une adresse fixe (Releases)
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: MAXI tv (dernière version)
+          body: APK pour Fire TV. Adresse fixe, toujours la dernière version.
+          artifacts: MAXItv.apk
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: true
+          token: ${{ secrets.GITHUB_TOKEN }}
